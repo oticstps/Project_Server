@@ -1,6 +1,8 @@
-IP Address : 169.254.33.125
-vnc : raspi_server_energy
-vnc : raspberrypi
+IP Address : 192.168.1.66
+WLAN : 10.187.119.99
+
+vnc : tpsoticsraspi
+vnc : otics1*
 mysql : otics_tps
 mysql : sukatno_ali
 node-red : otics_tps
