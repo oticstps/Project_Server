@@ -1,0 +1,8 @@
+database_tps_core
+database_tps_energy
+database_tps_hikitori
+database_tps_master
+database_tps_plant_2
+database_tps_produksi
+database_tps_trial
+db_energy_area_compressor
