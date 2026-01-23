@@ -1,1 +1,17 @@
+IP Address : 169.254.33.125
+vnc : raspi_server_energy
+vnc : raspberrypi
+mysql : otics_tps
+mysql : sukatno_ali
+node-red : otics_tps
+node-red : sukatno_ali
 
+
+
+IP Address : 169.254.33.24
+vnc : raspinode1
+vnc : otics_tps
+mysql : otics_tps
+mysql : sukatno_ali
+node-red : otics_tps
+node-red : sukatno_ali
