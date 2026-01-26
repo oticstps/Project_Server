@@ -1,2 +1,6 @@
 
 WLAN : 10.163.248.100
+
+VNC : raspinode3
+VNC_Pass : otics1*
+
