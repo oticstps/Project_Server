@@ -1,6 +1,18 @@
 
-WLAN : 10.163.248.100
 
+Raspi =>
+
+WLAN : 10.163.248.100
 VNC : raspinode3
 VNC_Pass : otics1*
+mysql : otics
+mysql_pass : tuanku
+
+
+Power Meter :
+
+'modbus_host': '169.254.0.10',
+'modbus_port': 502,
+'unit_id': 1,
+
 
