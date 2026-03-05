@@ -36,7 +36,10 @@ CREATE TABLE tb_realtime_comp_19 (
     present_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Saat Ini',
     rising_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Maksimum',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabel data eksternal KUB';
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+    COMMENT='Tabel data eksternal KUB';
 
 CREATE TABLE tb_realtime_comp_21 (
     id INT(11) NOT NULL AUTO_INCREMENT,
@@ -76,7 +79,10 @@ CREATE TABLE tb_realtime_comp_21 (
     present_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Saat Ini',
     rising_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Maksimum',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabel data eksternal KUB';
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+    COMMENT='Tabel data eksternal KUB';
 
 
 CREATE TABLE tb_realtime_comp_24 (
@@ -117,7 +123,10 @@ CREATE TABLE tb_realtime_comp_24 (
     present_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Saat Ini',
     rising_demand_ext DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Demand Maksimum',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabel data eksternal KUB';
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+    COMMENT='Tabel data eksternal KUB';
 
 
 
@@ -198,7 +207,10 @@ CREATE TABLE tb_realtime_kubikal_p63 (
     voltage_bn DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Tegangan Line-to-Neutral Fasa B-N (V)',
     voltage_cn DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Tegangan Line-to-Neutral Fasa C-N (V)',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabel pengukuran KUB lengkap';
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+    COMMENT='Tabel pengukuran KUB lengkap';
 
 
 CREATE TABLE tb_realtime_kubikal_p64 (
@@ -236,4 +248,7 @@ CREATE TABLE tb_realtime_kubikal_p64 (
     voltage_bn DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Tegangan Line-to-Neutral Fasa B-N (V)',
     voltage_cn DECIMAL(10,3) NULL DEFAULT NULL COMMENT 'Tegangan Line-to-Neutral Fasa C-N (V)',
     PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabel pengukuran KUB lengkap';
+) ENGINE=InnoDB 
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+    COMMENT='Tabel pengukuran KUB lengkap';
