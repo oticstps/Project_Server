@@ -282,6 +282,47 @@ COLLATE=utf8mb4_general_ci;
 
 
 
+CREATE TABLE tb_kub2_panel63 (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    power_meter VARCHAR(255) NULL DEFAULT NULL,
+    value VARCHAR(255) NULL DEFAULT NULL,
+    shift VARCHAR(50) NULL DEFAULT NULL,
+    day VARCHAR(50) NULL DEFAULT NULL,
+    week VARCHAR(50) NULL DEFAULT NULL,
+    month VARCHAR(50) NULL DEFAULT NULL,
+    year VARCHAR(50) NULL DEFAULT NULL,
+
+    INDEX idx_datetime (date_time),
+    INDEX idx_power_meter (power_meter),
+    INDEX idx_shift (shift)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE tb_kub2_panel64 (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    date_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    power_meter VARCHAR(255) NULL DEFAULT NULL,
+    value VARCHAR(255) NULL DEFAULT NULL,
+    shift VARCHAR(50) NULL DEFAULT NULL,
+    day VARCHAR(50) NULL DEFAULT NULL,
+    week VARCHAR(50) NULL DEFAULT NULL,
+    month VARCHAR(50) NULL DEFAULT NULL,
+    year VARCHAR(50) NULL DEFAULT NULL,
+
+    INDEX idx_datetime (date_time),
+    INDEX idx_power_meter (power_meter),
+    INDEX idx_shift (shift)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_general_ci;
+
+
+
+
+
 
 
 
