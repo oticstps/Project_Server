@@ -1,0 +1,1 @@
+C:\xampp\mysql\bin>mysql -h 172.27.63.180 -u otics_tps -p database_tps_master < "%USERPROFILE%\Downloads\database_tps_master.sql"
