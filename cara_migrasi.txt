@@ -5,9 +5,12 @@ C:\xampp\mysql\bin>mysql -h 172.27.63.180 -u otics_tps -p database_tps_master < 
 
 ---- ini kalau menggunakan raspi
 
+[1]
 mysqldump -h 10.42.0.131 -u otics_tps -p \
 --single-transaction \
 --routines \
 --triggers \
 --events \
 database_tps_master > database_tps_master.sql
+[2]
+mysql -h 10.42.0.1 -u otics_tps -p database_tps_master < database_tps_master.sql
