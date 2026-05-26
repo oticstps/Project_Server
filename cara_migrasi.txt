@@ -1,2 +1,13 @@
 cd C:\xampp\mysql\bin
 C:\xampp\mysql\bin>mysql -h 172.27.63.180 -u otics_tps -p database_tps_master < "%USERPROFILE%\Downloads\database_tps_master.sql"
+
+
+
+---- ini kalau menggunakan raspi
+
+mysqldump -h 10.42.0.131 -u otics_tps -p \
+--single-transaction \
+--routines \
+--triggers \
+--events \
+database_tps_master > database_tps_master.sql
