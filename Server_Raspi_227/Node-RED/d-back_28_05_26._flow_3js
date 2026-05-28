@@ -1,0 +1,203 @@
+[
+    {
+        "id": "inject_trigger",
+        "type": "inject",
+        "z": "9808d0a4f269f36f",
+        "name": "Trigger (Setiap 5 Menit)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 220,
+        "y": 110,
+        "wires": [
+            [
+                "file_reader"
+            ]
+        ]
+    },
+    {
+        "id": "file_reader",
+        "type": "file in",
+        "z": "9808d0a4f269f36f",
+        "name": "Baca File JSON",
+        "filename": "/home/raspinode4/on/d-surya/media/manifest.json",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 190,
+        "y": 150,
+        "wires": [
+            [
+                "json_parser"
+            ]
+        ]
+    },
+    {
+        "id": "json_parser",
+        "type": "json",
+        "z": "9808d0a4f269f36f",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 180,
+        "y": 190,
+        "wires": [
+            [
+                "function_processor"
+            ]
+        ]
+    },
+    {
+        "id": "function_processor",
+        "type": "function",
+        "z": "9808d0a4f269f36f",
+        "name": "Ambil Data OCR",
+        "func": "var areas = msg.payload.areas || [];\nvar allData = {};\n\nareas.forEach(function (area) {\n    if (area.ocr) {\n        // Simpan semua data ke dalam satu objek berdasarkan nama Area\n        allData[area.name] = {\n            value: area.ocr.value,\n            label: area.ocr.label,\n            unit: area.ocr.unit,\n            status: area.ocr.ok\n        };\n    }\n});\n\n// Kembalikan sebagai 1 pesan saja berisi objek lengkap\nmsg.payload = allData;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 190,
+        "y": 230,
+        "wires": [
+            [
+                "582274912068e6b6",
+                "a6bc903eb56b6114",
+                "83f97f0ac0872cfa"
+            ]
+        ]
+    },
+    {
+        "id": "582274912068e6b6",
+        "type": "debug",
+        "z": "9808d0a4f269f36f",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 440,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "a6bc903eb56b6114",
+        "type": "mqtt out",
+        "z": "9808d0a4f269f36f",
+        "name": "",
+        "topic": "data_plts",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "02cee25fdeee41a0",
+        "x": 440,
+        "y": 235,
+        "wires": []
+    },
+    {
+        "id": "83f97f0ac0872cfa",
+        "type": "mqtt out",
+        "z": "9808d0a4f269f36f",
+        "name": "",
+        "topic": "data_plts",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3a2908b19ec1f3ed",
+        "x": 440,
+        "y": 285,
+        "wires": []
+    },
+    {
+        "id": "02cee25fdeee41a0",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "192.168.137.131",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "3a2908b19ec1f3ed",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "172.27.63.180",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
