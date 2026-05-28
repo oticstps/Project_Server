@@ -1,0 +1,3347 @@
+[
+    {
+        "id": "551165082d2f503a",
+        "type": "link in",
+        "z": "4e22d7901237f751",
+        "name": "link in 1",
+        "links": [
+            "a853b267166be2b0"
+        ],
+        "x": 165,
+        "y": 275,
+        "wires": [
+            [
+                "04c1eff26aece6aa",
+                "dc5b3aee42828c23"
+            ]
+        ]
+    },
+    {
+        "id": "04c1eff26aece6aa",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 375,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "2c131b9e56e2cc2d",
+        "type": "comment",
+        "z": "4e22d7901237f751",
+        "name": "abnormal signal",
+        "info": "0,PROGRES,1348,1422,427,942,0,170,NORMAL,0,0,OFF;\n",
+        "x": 115,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "dc5b3aee42828c23",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "parse_lora_prefix_suffix",
+        "func": "\n\n\n// ============================================\n// STRICT LORA PARSER\n// Format yang diterima:\n// prefix,value,suffix\n//\n// Contoh valid:\n// &e%,12345.67,v*p\n// 908,54321.00,$17\n// @yf,136703120.00,~ku\n//\n// Output:\n// msg.payload = [panel, power_meter, value]\n// ============================================\n\n// Ambil data masuk\nvar raw = msg.payload;\n\n// Pastikan string\nif (typeof raw !== \"string\") {\n    raw = String(raw);\n}\n\n// Bersihkan newline, carriage return, spasi pinggir\nraw = raw.replace(/\\r/g, \"\").replace(/\\n/g, \"\").trim();\n\n// 1) Buang jika kosong\nif (!raw || raw.length < 5) {\n    return null;\n}\n\n// 2) Buang semua paket lama yang diawali *\n// contoh: *BS_1..., *kub..., *cr7...\nif (raw.startsWith(\"*\")) {\n    return null;\n}\n\n// 3) Harus tepat 3 bagian: prefix,value,suffix\nvar parts = raw.split(\",\");\nif (parts.length !== 3) {\n    return null;\n}\n\nvar prefix = parts[0].trim();\nvar valueStr = parts[1].trim();\nvar suffix = parts[2].trim();\n\n// 4) Validasi prefix/suffix\nvar panel = \"\";\nvar power_meter = \"\";\n\n// ============================================\n// CHSAA / CHSAB\n// ============================================\n\n\n\n\n// CHSAA\nif (prefix === \"&e%\" && suffix === \"v*p\") {\n    panel = \"chsaa\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"908\" && suffix === \"$17\") {\n    panel = \"chsaa\";\n    power_meter = \"pm_200\";\n}\n// CHSAB\nelse if (prefix === \"w%c\" && suffix === \"8lv\") {\n    panel = \"chsab\";\n    power_meter = \"pm_200\";\n}\nelse if (prefix === \"u57\" && suffix === \"7%u\") {\n    panel = \"chsab\";\n    power_meter = \"pm_220\";\n}\n// CHAB\nelse if (prefix === \"n2z\" && suffix === \"7~i\") {\n    panel = \"chab\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"@&d\" && suffix === \"go%\") {\n    panel = \"chab\";\n    power_meter = \"pm_200\";\n}\n// CHCD\nelse if (prefix === \"adj\" && suffix === \"d18\") {\n    panel = \"chcd\";\n    power_meter = \"pm_200\";\n}\nelse if (prefix === \"zgb\" && suffix === \"ehr\") {\n    panel = \"chcd\";\n    power_meter = \"pm_220\";\n}\n// BS1\nelse if (prefix === \"560\" && suffix === \"818\") {\n    panel = \"bs1\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"s%3\" && suffix === \"gmo\") {\n    panel = \"bs1\";\n    power_meter = \"pm_200\";\n}\n// BS2\nelse if (prefix === \"ulc\" && suffix === \"uca\") {\n    panel = \"bs2\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"x61\" && suffix === \"&sn\") {\n    panel = \"bs2\";\n    power_meter = \"pm_200\";\n}\n\n\n\n\n// CHEF\nelse if (prefix === \"duy\" && suffix === \"ogg\") {\n    panel = \"chef\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"^&a\" && suffix === \"32v\") {\n    panel = \"chef\";\n    power_meter = \"pm_200\";\n}\n\n// CC1\nelse if (prefix === \"n97\" && suffix === \"c1x\") {\n    panel = \"cc1\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"574\" && suffix === \"yra\") {\n    panel = \"cc1\";\n    power_meter = \"pm_200\";\n}\n\n// CONN\n\nelse if (prefix === \"5&d\" && suffix === \"t1s\") {\n    panel = \"conn\";\n    power_meter = \"pm_200\";\n}\n\n\n\n// RET\nelse if (prefix === \"mgq\" && suffix === \"dp1\") {\n    panel = \"ret\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"p1@\" && suffix === \"!3p\") {\n    panel = \"ret\";\n    power_meter = \"pm_200\";\n}\n\n// RA\nelse if (prefix === \"~g6\" && suffix === \"%?j\") {\n    panel = \"ra\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"ieq\" && suffix === \"nyy\") {\n    panel = \"ra\";\n    power_meter = \"pm_200\";\n}\n// HLA\nelse if (prefix === \"?l@\" && suffix === \"q&j\") {\n    panel = \"hla\";\n    power_meter = \"pm_200\";\n}\n\n\n\n// CHSAC\nelse if (prefix === \"qix\" && suffix === \"n7~\") {\n    panel = \"chsac\"; power_meter = \"pm_220\";\n}\nelse if (prefix === \"u%u\" && suffix === \"7~*\") {\n    panel = \"chsac\"; power_meter = \"pm_200\";\n}\n// CC234\nelse if (prefix === \"1t!\" && suffix === \"q%4\") {\n    panel = \"cc234\"; power_meter = \"pm_220\";\n}\nelse if (prefix === \"q9m\" && suffix === \"?@&\") {\n    panel = \"cc234\"; power_meter = \"pm_200\";\n}\n\n\n\n\n\n\n\n// ============================================\n// CR1\n// ============================================\nelse if (prefix === \"0i8\" && suffix === \"9gg\") {\n    panel = \"cr1\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"hqm\" && suffix === \"40%\") {\n    panel = \"cr1\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR2\n// ============================================\nelse if (prefix === \"0l0\" && suffix === \"caj\") {\n    panel = \"cr2\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"s@w\" && suffix === \"9$9\") {\n    panel = \"cr2\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR3\n// ============================================\nelse if (prefix === \"@yf\" && suffix === \"~ku\") {\n    panel = \"cr3\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"$@y\" && suffix === \"o?f\") {\n    panel = \"cr3\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR4\n// ============================================\nelse if (prefix === \"w&7\" && suffix === \"zm2\") {\n    panel = \"cr4\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"@2h\" && suffix === \"y6h\") {\n    panel = \"cr4\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR5\n// ============================================\nelse if (prefix === \"0*y\" && suffix === \"pru\") {\n    panel = \"cr5\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"8m7\" && suffix === \"cuf\") {\n    panel = \"cr5\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR6\n// ============================================\nelse if (prefix === \"j4c\" && suffix === \"&32\") {\n    panel = \"cr6\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"@3x\" && suffix === \"dk?\") {\n    panel = \"cr6\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR7\n// ============================================\nelse if (prefix === \"kgn\" && suffix === \"yyx\") {\n    panel = \"cr7\";\n    power_meter = \"pm_220\";\n}\n// CR7 PM200 masih nonaktif\nelse if (prefix === \"m!4\" && suffix === \"3uq\") {\n    panel = \"cr7\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR8\n// ============================================\nelse if (prefix === \"xs@\" && suffix === \"@dq\") {\n    panel = \"cr8\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"t%~\" && suffix === \"0qx\") {\n    panel = \"cr8\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR9\n// ============================================\nelse if (prefix === \"s*y\" && suffix === \"joe\") {\n    panel = \"cr9\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"i93\" && suffix === \"!jp\") {\n    panel = \"cr9\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR10\n// ============================================\nelse if (prefix === \"%@j\" && suffix === \"0p6\") {\n    panel = \"cr10\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"lwl\" && suffix === \"0&&\") {\n    panel = \"cr10\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR11\n// ============================================\nelse if (prefix === \"bsv\" && suffix === \"x0f\") {\n    panel = \"cr11\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"&*g\" && suffix === \"qm$\") {\n    panel = \"cr11\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// CR12\n// ============================================\nelse if (prefix === \"w!9\" && suffix === \"z~x\") {\n    panel = \"cr12\";\n    power_meter = \"pm_220\";\n}\nelse if (prefix === \"g8x\" && suffix === \"hv3\") {\n    panel = \"cr12\";\n    power_meter = \"pm_200\";\n}\n\n// ============================================\n// BUKAN DATA YANG TERDAFTAR\n// ============================================\nelse {\n    return null;\n}\n\n// 5) Validasi angka\nvar value = parseFloat(valueStr);\nif (isNaN(value)) {\n    return null;\n}\n\n// 6) Optional: tolak nilai tidak masuk akal\nif (value < 0) {\n    return null;\n}\n\n// 7) Bentuk output\nmsg.raw_payload = raw;\nmsg.payload = [panel, power_meter, value];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 425,
+        "y": 280,
+        "wires": [
+            [
+                "3ac1da8313062ae8",
+                "ad7527ef1bc78aca",
+                "2ed0f763c07a56d2"
+            ]
+        ]
+    },
+    {
+        "id": "3ac1da8313062ae8",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "setting_time",
+        "func": "// === TIME SETUP NODE ===\nvar now = new Date();\nvar currentHour = now.getHours();\nvar currentMinute = now.getMinutes();\n\nvar shift;\nif ((currentHour > 7 || (currentHour === 7 && currentMinute >= 0)) &&\n    (currentHour < 19 || (currentHour === 19 && currentMinute <= 50))) {\n    shift = 'shift_1';\n} else {\n    shift = 'shift_2';\n}\n\nvar currentDay = now.getDate();\nvar currentWeek = Math.ceil((currentDay - 1 - now.getDay() + 1) / 7);\nvar currentMonth = now.toLocaleString('default', { month: 'long' });\nvar currentYear = now.getFullYear();\n\nmsg.timeData = {\n    shift: shift,\n    day: currentDay,\n    week: currentWeek,\n    month: currentMonth,\n    year: currentYear\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 385,
+        "y": 320,
+        "wires": [
+            [
+                "ec7abb149ac37063",
+                "83745c5ad43a7ccb",
+                "739922c47ddaacd5",
+                "dd36638347741398",
+                "bec21775b9d9819d",
+                "ff1175d4b9775099",
+                "d9e56de30d500a8f",
+                "e1f87670397bf80c",
+                "92b7e0ff196032e0",
+                "7776b9099ece39c5",
+                "a46c9c05038586af",
+                "93a6856d6bdac9c8",
+                "1fcf57edd6803e8b",
+                "c8a1b4eee707454b",
+                "14ca324f152d77fe",
+                "ac36abc66995b70f",
+                "8812d74c7c2df278",
+                "763b8ae36854057b",
+                "d6261c14c65ee090",
+                "e1a5c92f1f89ee39",
+                "bfdaad8a9d842b28",
+                "483dfc55c8e1862b",
+                "8ef13bbdd961dd16",
+                "6388c58af6fd7417",
+                "c8446be683af4470",
+                "a08d624858ebb2c9",
+                "0332e496d90e4427",
+                "74e31dbefe3b8e5d",
+                "ccfbbd397da156a8",
+                "0baeebf073ed8277",
+                "c4388e79749cb0e9",
+                "f8a9e39b29af4494",
+                "b2d01a2bae6c30e6",
+                "c982be24a216fb41",
+                "490863200c494805",
+                "1eb7f1936529cb60",
+                "80fd331a27b32abd",
+                "3bf52e679c1ea3e3",
+                "728666be1fb902cd",
+                "1aec7aca9f13ef23",
+                "3c31e0eafc8f4340",
+                "51ece4723b18d02f",
+                "aec765a2fe6e31de",
+                "defbae73be22f980",
+                "e80df62653631786",
+                "888a724f42f54ccb",
+                "1a2d8ef431d5a1e2",
+                "f6bd511cecac2b06",
+                "48bfdb00a1ce5b55",
+                "a91141b216c814d2"
+            ]
+        ]
+    },
+    {
+        "id": "ec7abb149ac37063",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = Number(msg.payload[2]);\nvar timeData = msg.timeData;\n\n// jika value <= 2617236, hentikan proses\nif (isNaN(value) || value <= 2618836) {\n    return null;\n}\n\nif (panel === 'cr1' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 960,
+        "wires": [
+            [
+                "39265a7999298623",
+                "84cec338f83dcef8",
+                "5243f1d1236777b6"
+            ]
+        ]
+    },
+    {
+        "id": "83745c5ad43a7ccb",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 137635408) {\n    return null;\n}\n\n\n\n\nif (panel === 'cr1' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1000,
+        "wires": [
+            [
+                "af9464add76d37df",
+                "bb43a27edace1a3f",
+                "7cd5da7e1786dd8f"
+            ]
+        ]
+    },
+    {
+        "id": "739922c47ddaacd5",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr2",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 1431999) {\n    return null;\n}\n\n\n\n\nif (panel === 'cr2' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr2 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1040,
+        "wires": [
+            [
+                "e1b83d6205f5fda6",
+                "7c60177b555a47b7"
+            ]
+        ]
+    },
+    {
+        "id": "dd36638347741398",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr2",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 180995968) {\n    return null;\n}\n\n\nif (panel === 'cr2' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr2 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1080,
+        "wires": [
+            [
+                "ea844df2147fa4d8",
+                "568c1caa47d3743a"
+            ]
+        ]
+    },
+    {
+        "id": "bec21775b9d9819d",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr3",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 4932691) {\n    return null;\n}\n\n\n\n\nif (panel === 'cr3' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr3 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1120,
+        "wires": [
+            [
+                "9286022f0352e782"
+            ]
+        ]
+    },
+    {
+        "id": "ff1175d4b9775099",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr3",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\n\nif (isNaN(value) || value <= 119948320) {\n    return null;\n}\n\n\n\nif (panel === 'cr3' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr3 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1160,
+        "wires": [
+            [
+                "745e0fac8cd77945"
+            ]
+        ]
+    },
+    {
+        "id": "d9e56de30d500a8f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr4",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 1866267) {\n    return null;\n}\n\n\n\n\nif (panel === 'cr4' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr4 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1200,
+        "wires": [
+            [
+                "feeeaa6f1d51df4b"
+            ]
+        ]
+    },
+    {
+        "id": "e1f87670397bf80c",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr4",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 187249536) {\n    return null;\n}\n\n\n\n\n\n\nif (panel === 'cr4' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr4 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1240,
+        "wires": [
+            [
+                "561b6da20dc7901e"
+            ]
+        ]
+    },
+    {
+        "id": "92b7e0ff196032e0",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr5",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 215125) {\n    return null;\n}\n\n\n\nif (panel === 'cr5' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr5 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1280,
+        "wires": [
+            [
+                "244eddde8669ee6c"
+            ]
+        ]
+    },
+    {
+        "id": "7776b9099ece39c5",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr5",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 24521756) {\n    return null;\n}\n\n\n\nif (panel === 'cr5' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr5 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1320,
+        "wires": [
+            [
+                "93fd42baab158b70"
+            ]
+        ]
+    },
+    {
+        "id": "a46c9c05038586af",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr6",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 1413539) {\n    return null;\n}\n\n\n\nif (panel === 'cr6' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr6 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1360,
+        "wires": [
+            [
+                "cef4863428624fa1"
+            ]
+        ]
+    },
+    {
+        "id": "93a6856d6bdac9c8",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr6",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 168393680) {\n    return null;\n}\n\n\nif (panel === 'cr6' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr6 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1400,
+        "wires": [
+            [
+                "0b745f1fed32b41f"
+            ]
+        ]
+    },
+    {
+        "id": "1fcf57edd6803e8b",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr7",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 1799111) {\n    return null;\n}\n\n\n\nif (panel === 'cr7' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr7 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1440,
+        "wires": [
+            [
+                "ff343b76fb27b6a4"
+            ]
+        ]
+    },
+    {
+        "id": "c8a1b4eee707454b",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr7",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 48821776) {\n    return null;\n}\n\n\n\nif (panel === 'cr7' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr7 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1480,
+        "wires": [
+            [
+                "465435f4cefcfe5f"
+            ]
+        ]
+    },
+    {
+        "id": "14ca324f152d77fe",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr8",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 1480644) {\n    return null;\n}\n\n\n\nif (panel === 'cr8' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr8 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1520,
+        "wires": [
+            [
+                "b149a19ff1bd9528"
+            ]
+        ]
+    },
+    {
+        "id": "ac36abc66995b70f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr8",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\n\nif (isNaN(value) || value <= 218985312) {\n    return null;\n}\n\n\n\nif (panel === 'cr8' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr8 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1560,
+        "wires": [
+            [
+                "f20258b8cc84d426"
+            ]
+        ]
+    },
+    {
+        "id": "8812d74c7c2df278",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr9",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 8960692) {\n    return null;\n}\n\n\nif (panel === 'cr9' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr9 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1600,
+        "wires": [
+            [
+                "980d675ce9a2fcc1"
+            ]
+        ]
+    },
+    {
+        "id": "763b8ae36854057b",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr9",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\n\nif (isNaN(value) || value <= 238400704) {\n    return null;\n}\n\n\n\nif (panel === 'cr9' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr9 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1640,
+        "wires": [
+            [
+                "607422a8944ff346"
+            ]
+        ]
+    },
+    {
+        "id": "d6261c14c65ee090",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr10",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 1108002) {\n    return null;\n}\n\n\n\nif (panel === 'cr10' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr10 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1680,
+        "wires": [
+            [
+                "df1c8561ae558a99"
+            ]
+        ]
+    },
+    {
+        "id": "e1a5c92f1f89ee39",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr10",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 204896096) {\n    return null;\n}\n\n\nif (panel === 'cr10' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr10 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1720,
+        "wires": [
+            [
+                "41bc5aa7a6896106"
+            ]
+        ]
+    },
+    {
+        "id": "bfdaad8a9d842b28",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr11",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 1775581) {\n    return null;\n}\n\n\nif (panel === 'cr11' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr11 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1760,
+        "wires": [
+            [
+                "ce8683e75446f42d"
+            ]
+        ]
+    },
+    {
+        "id": "483dfc55c8e1862b",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr11",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 204330432) {\n    return null;\n}\n\n\nif (panel === 'cr11' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr11 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1800,
+        "wires": [
+            [
+                "13f77ce58c79404d"
+            ]
+        ]
+    },
+    {
+        "id": "8ef13bbdd961dd16",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cr12",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 2201929) {\n    return null;\n}\n\n\nif (panel === 'cr12' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cr12 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1840,
+        "wires": [
+            [
+                "d630d224c1e57b39"
+            ]
+        ]
+    },
+    {
+        "id": "6388c58af6fd7417",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cr12",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 214202624) {\n    return null;\n}\n\n\nif (panel === 'cr12' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cr12 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1880,
+        "wires": [
+            [
+                "bdeb76ebc2eb9159"
+            ]
+        ]
+    },
+    {
+        "id": "a08d624858ebb2c9",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chsaa",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 662234688) {\n    return null;\n}\n\n\nif (panel === 'chsaa' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chsaa (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 1960,
+        "wires": [
+            [
+                "1ffb5a3dadc0ddb2"
+            ]
+        ]
+    },
+    {
+        "id": "c8446be683af4470",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chsaa",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 15705259) {\n    return null;\n}\n\n\nif (panel === 'chsaa' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chsaa (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 1920,
+        "wires": [
+            [
+                "dc5ed123d2040ce9"
+            ]
+        ]
+    },
+    {
+        "id": "74e31dbefe3b8e5d",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chsab",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 641965696) {\n    return null;\n}\n\n\nif (panel === 'chsab' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chsab (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2040,
+        "wires": [
+            [
+                "38f0281a4b82cc2c"
+            ]
+        ]
+    },
+    {
+        "id": "0332e496d90e4427",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chsab",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 32978992) {\n    return null;\n}\n\n\nif (panel === 'chsab' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chsab (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2000,
+        "wires": [
+            [
+                "0f9d400c7d51cbd3"
+            ]
+        ]
+    },
+    {
+        "id": "c4388e79749cb0e9",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chab",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 575934464) {\n    return null;\n}\n\n\nif (panel === 'chab' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chab (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2120,
+        "wires": [
+            [
+                "52323124bde62df0"
+            ]
+        ]
+    },
+    {
+        "id": "f8a9e39b29af4494",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chab",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 16987040) {\n    return null;\n}\n\n\nif (panel === 'chab' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chab (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2080,
+        "wires": [
+            [
+                "fb567025d9045636"
+            ]
+        ]
+    },
+    {
+        "id": "ccfbbd397da156a8",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chcd",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 575647040) {\n    return null;\n}\n\n\nif (panel === 'chcd' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chcd (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2200,
+        "wires": [
+            [
+                "fb7b951c11c9f21c"
+            ]
+        ]
+    },
+    {
+        "id": "0baeebf073ed8277",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chcd",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 7028043) {\n    return null;\n}\n\n\nif (panel === 'chcd' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chcd (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2160,
+        "wires": [
+            [
+                "d73f6ce62bb7a507"
+            ]
+        ]
+    },
+    {
+        "id": "b2d01a2bae6c30e6",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_bs1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 693976) {\n    return null;\n}\n\n\nif (panel === 'bs1' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_bs1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 360,
+        "wires": [
+            [
+                "7acc7e0b3a96e257"
+            ]
+        ]
+    },
+    {
+        "id": "c982be24a216fb41",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_bs1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 574627200) {\n    return null;\n}\n\n\nif (panel === 'bs1' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_bs1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 400,
+        "wires": [
+            [
+                "6f2f51d8f309ec9a"
+            ]
+        ]
+    },
+    {
+        "id": "490863200c494805",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_bs2",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 25257830) {\n    return null;\n}\n\n\nif (panel === 'bs2' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_bs2 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 440,
+        "wires": [
+            [
+                "728dcc4e40bb5816"
+            ]
+        ]
+    },
+    {
+        "id": "1eb7f1936529cb60",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_bs2",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 269224832) {\n    return null;\n}\n\n\nif (panel === 'bs2' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_bs2 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 480,
+        "wires": [
+            [
+                "51f94e708bec3c2f"
+            ]
+        ]
+    },
+    {
+        "id": "80fd331a27b32abd",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_hla",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 762710208) {\n    return null;\n}\n\n\nif (panel === 'hla' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_hla (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 320,
+        "wires": [
+            [
+                "bd8c36567e77f0e7"
+            ]
+        ]
+    },
+    {
+        "id": "3bf52e679c1ea3e3",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_ret",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 19994708) {\n    return null;\n}\n\n\nif (panel === 'ret' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_ret (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 520,
+        "wires": [
+            [
+                "3649c3ea8a7131c0"
+            ]
+        ]
+    },
+    {
+        "id": "728666be1fb902cd",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_ret",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 186939856) {\n    return null;\n}\n\n\nif (panel === 'ret' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_ret (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 560,
+        "wires": [
+            [
+                "39970701d7f5805d"
+            ]
+        ]
+    },
+    {
+        "id": "1aec7aca9f13ef23",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_conn",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 372023) {\n    return null;\n}\n\n\nif (panel === 'conn' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_conn (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 865,
+        "y": 280,
+        "wires": [
+            [
+                "66d12133d7f8dedf"
+            ]
+        ]
+    },
+    {
+        "id": "3c31e0eafc8f4340",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_ra",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 4221932) {\n    return null;\n}\n\n\nif (panel === 'ra' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_ra (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 855,
+        "y": 600,
+        "wires": [
+            [
+                "a2eecd976f16e580",
+                "5ee1a07e182ffaae"
+            ]
+        ]
+    },
+    {
+        "id": "a91141b216c814d2",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_ra",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 1118355) {\n    return null;\n}\n\n\nif (panel === 'ra' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_ra (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 855,
+        "y": 640,
+        "wires": [
+            [
+                "85bada48fbd680d7",
+                "0a0fd3879aa65eca"
+            ]
+        ]
+    },
+    {
+        "id": "e80df62653631786",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cc1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 55759820) {\n    return null;\n}\n\n\nif (panel === 'cc1' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cc1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2360,
+        "wires": [
+            [
+                "1fc8864bef2e2038"
+            ]
+        ]
+    },
+    {
+        "id": "defbae73be22f980",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cc1",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 145193) {\n    return null;\n}\n\n\nif (panel === 'cc1' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cc1 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2320,
+        "wires": [
+            [
+                "0abb7a67e0345c60"
+            ]
+        ]
+    },
+    {
+        "id": "1a2d8ef431d5a1e2",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_cc234",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 12854937) {\n    return null;\n}\n\n\nif (panel === 'cc234' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_cc234 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2440,
+        "wires": [
+            [
+                "f90bc2b2e92e29ff"
+            ]
+        ]
+    },
+    {
+        "id": "888a724f42f54ccb",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_cc234",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 3290683) {\n    return null;\n}\n\n\nif (panel === 'cc234' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_cc234 (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2400,
+        "wires": [
+            [
+                "bea2806b2cf43a38"
+            ]
+        ]
+    },
+    {
+        "id": "48bfdb00a1ce5b55",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chsac",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 37681616) {\n    return null;\n}\n\n\nif (panel === 'chsac' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chsac (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2520,
+        "wires": [
+            [
+                "61bff837ed4daba0"
+            ]
+        ]
+    },
+    {
+        "id": "f6bd511cecac2b06",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chsac",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 1149384) {\n    return null;\n}\n\n\nif (panel === 'chsac' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chsac (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 2480,
+        "wires": [
+            [
+                "db5440114d8b0cbe"
+            ]
+        ]
+    },
+    {
+        "id": "51ece4723b18d02f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm220_chef",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 17033846) {\n    return null;\n}\n\n\nif (panel === 'chef' && power_meter === 'pm_220') {\n    msg.topic = \"INSERT INTO tb_pm220_chef (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2240,
+        "wires": [
+            [
+                "2a4226bd1f23b766"
+            ]
+        ]
+    },
+    {
+        "id": "aec765a2fe6e31de",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "tb_pm200_chef",
+        "func": "var panel = msg.payload[0];\nvar power_meter = msg.payload[1];\nvar value = msg.payload[2];\nvar timeData = msg.timeData;\n\n\nif (isNaN(value) || value <= 234197856) {\n    return null;\n}\n\n\nif (panel === 'chef' && power_meter === 'pm_200') {\n    msg.topic = \"INSERT INTO tb_pm200_chef (power_meter, value, shift, day, week, month, year) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n    msg.payload = [\n        power_meter,\n        value,\n        timeData.shift,\n        timeData.day,\n        timeData.week,\n        timeData.month,\n        timeData.year\n    ];\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 2280,
+        "wires": [
+            [
+                "ef1332354e9f44ee"
+            ]
+        ]
+    },
+    {
+        "id": "efceb44b48c641db",
+        "type": "comment",
+        "z": "4e22d7901237f751",
+        "name": "chcd id nya tida umum, id pm220 : 4, pm200 : 3",
+        "info": "pass tidak sesuai default",
+        "x": 390,
+        "y": 2160,
+        "wires": []
+    },
+    {
+        "id": "ad7527ef1bc78aca",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "update_layout_otics_1",
+        "func": "// ============================================\n// FUNCTION NODE: build dynamic update query\n// input  : msg.payload = [panel, power_meter, value]\n// contoh : [\"cr1\", \"pm_200\", 12345.67]\n// output : msg.topic, msg.payload -> ke mysql node\n// ============================================\n\nconst TABLE_NAME = \"tb_layout_otics_1\";\n\n// whitelist panel yang memang ada di parser / DB\nconst ALLOWED_PANELS = new Set([\n    \"bs1\", \"bs2\",\n    \"cc1\", \"cc234\",\n    \"chab\", \"chcd\", \"chef\",\n    \"chsaa\", \"chsab\", \"chsac\",\n    \"conn\",\n    \"cr1\", \"cr2\", \"cr3\", \"cr4\", \"cr5\", \"cr6\",\n    \"cr7\", \"cr8\", \"cr9\", \"cr10\", \"cr11\", \"cr12\",\n    \"ct\", \"hla\", \"ra\", \"ret\"\n]);\n\n// whitelist power meter\nconst ALLOWED_METERS = {\n    \"pm_200\": \"pm200\",\n    \"pm_220\": \"pm220\"\n};\n\n// validasi payload\nif (!Array.isArray(msg.payload) || msg.payload.length < 3) {\n    node.warn(\"Payload tidak sesuai format [panel, power_meter, value]\");\n    return null;\n}\n\nlet panel = String(msg.payload[0] || \"\").trim().toLowerCase();\nlet power_meter = String(msg.payload[1] || \"\").trim().toLowerCase();\nlet value = Number(msg.payload[2]);\n\nif (!ALLOWED_PANELS.has(panel)) {\n    node.warn(\"Panel tidak dikenal: \" + panel);\n    return null;\n}\n\nif (!ALLOWED_METERS[power_meter]) {\n    node.warn(\"Power meter tidak dikenal: \" + power_meter);\n    return null;\n}\n\nif (!isFinite(value)) {\n    node.warn(\"Value bukan angka valid: \" + msg.payload[2]);\n    return null;\n}\n\n// bentuk nama kolom otomatis\n// contoh:\n// panel = cr1, power_meter = pm_200 -> tb_pm200_cr1_value\n// panel = cr1, power_meter = pm_220 -> tb_pm220_cr1_value\nconst meterKey = ALLOWED_METERS[power_meter];\nconst columnName = `tb_${meterKey}_${panel}_value`;\n\n// query update baris terakhir\nmsg.topic = `\n    UPDATE ${TABLE_NAME}\n    SET ${columnName} = ?\n    ORDER BY id DESC\n    LIMIT 1\n`;\n\nmsg.payload = [value];\n\n// info tambahan untuk debug\nmsg.columnName = columnName;\nmsg.panel = panel;\nmsg.power_meter = power_meter;\nmsg.value = value;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 725,
+        "y": 230,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "39aa180a1680d61a",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1095,
+        "wires": []
+    },
+    {
+        "id": "57f0d47bc7c3d8fb",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1135,
+        "wires": []
+    },
+    {
+        "id": "358fbfea98d0aae0",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr2",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1175,
+        "wires": []
+    },
+    {
+        "id": "d88d85afb4d68a69",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr2",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1215,
+        "wires": []
+    },
+    {
+        "id": "8928705979e043d6",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr3",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1255,
+        "wires": []
+    },
+    {
+        "id": "70ca9fb02b161ff6",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr3",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1295,
+        "wires": []
+    },
+    {
+        "id": "34585d132a42878b",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr4",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1335,
+        "wires": []
+    },
+    {
+        "id": "0de2d60bf24f19ad",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr4",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1375,
+        "wires": []
+    },
+    {
+        "id": "021c03a290e7d324",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr5",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1415,
+        "wires": []
+    },
+    {
+        "id": "e03df62e613ea62c",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr5",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1455,
+        "wires": []
+    },
+    {
+        "id": "4373d144e7fd3433",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr6",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1495,
+        "wires": []
+    },
+    {
+        "id": "ee1485493d5550b2",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr6",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1535,
+        "wires": []
+    },
+    {
+        "id": "b5afe6d2f0735b9e",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr7",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1575,
+        "wires": []
+    },
+    {
+        "id": "cf10519b9701cfba",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr7",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1615,
+        "wires": []
+    },
+    {
+        "id": "bcc60a14ca55e033",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr8",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1655,
+        "wires": []
+    },
+    {
+        "id": "a1e7c0505c3a3810",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr8",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1695,
+        "wires": []
+    },
+    {
+        "id": "f8022db55f6dbd98",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr9",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1735,
+        "wires": []
+    },
+    {
+        "id": "cc0e272682ba0728",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr9",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 1775,
+        "wires": []
+    },
+    {
+        "id": "c80205b44ac9534e",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr10",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 1815,
+        "wires": []
+    },
+    {
+        "id": "bc9c246caaab82ba",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr10",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 1855,
+        "wires": []
+    },
+    {
+        "id": "8bfefb3a4c108954",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr11",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 1895,
+        "wires": []
+    },
+    {
+        "id": "38cf3c3a1c53efa2",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr11",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 1935,
+        "wires": []
+    },
+    {
+        "id": "21aba989be978681",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cr12",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 1975,
+        "wires": []
+    },
+    {
+        "id": "e4dd6dae4d39304f",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cr12",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2015,
+        "wires": []
+    },
+    {
+        "id": "01cbfdcac63fa726",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chsaa",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2055,
+        "wires": []
+    },
+    {
+        "id": "7a3f674e991b60fd",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chsaa",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2095,
+        "wires": []
+    },
+    {
+        "id": "74528fb07222de2e",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chsab",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2135,
+        "wires": []
+    },
+    {
+        "id": "b60d710f4475512c",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chsab",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2175,
+        "wires": []
+    },
+    {
+        "id": "210e873f1628502a",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chab",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2215,
+        "wires": []
+    },
+    {
+        "id": "188eaa18f89770b8",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chab",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2255,
+        "wires": []
+    },
+    {
+        "id": "d12199dbc315f7fe",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chcd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2295,
+        "wires": []
+    },
+    {
+        "id": "8854cc54c538ae36",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chcd",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2335,
+        "wires": []
+    },
+    {
+        "id": "87df9b649a48f884",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chef",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2375,
+        "wires": []
+    },
+    {
+        "id": "847d497026cce3f5",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chef",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2415,
+        "wires": []
+    },
+    {
+        "id": "beaba2bac230ab66",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cc1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 2455,
+        "wires": []
+    },
+    {
+        "id": "2dd08251a186de34",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cc1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1115,
+        "y": 2495,
+        "wires": []
+    },
+    {
+        "id": "26891a2cdeace0e5",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_cc234",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2535,
+        "wires": []
+    },
+    {
+        "id": "4dbecba3061cdde0",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_cc234",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2575,
+        "wires": []
+    },
+    {
+        "id": "55e10b3144cc5078",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_chsac",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2615,
+        "wires": []
+    },
+    {
+        "id": "b478d2d4542bff27",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_chsac",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1125,
+        "y": 2655,
+        "wires": []
+    },
+    {
+        "id": "10401e4bf4cc1433",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_conn",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1275,
+        "y": 185,
+        "wires": []
+    },
+    {
+        "id": "3496de7daf9f2322",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_hla",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 225,
+        "wires": []
+    },
+    {
+        "id": "5c1826198c303662",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_bs1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 265,
+        "wires": []
+    },
+    {
+        "id": "736018a576b33087",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_bs1",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 305,
+        "wires": []
+    },
+    {
+        "id": "2a031b2c10582e43",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_bs2",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 345,
+        "wires": []
+    },
+    {
+        "id": "fec409206bfa2679",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_bs2",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 385,
+        "wires": []
+    },
+    {
+        "id": "090287a33ed610bb",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_ret",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 425,
+        "wires": []
+    },
+    {
+        "id": "014db263beda9b69",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_ret",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 465,
+        "wires": []
+    },
+    {
+        "id": "ff6218cecd6b99ff",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_220_ra",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 505,
+        "wires": []
+    },
+    {
+        "id": "4de210facb5fc001",
+        "type": "mqtt out",
+        "z": "4e22d7901237f751",
+        "name": "",
+        "topic": "pm_200_ra",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "3aa7c067eabc2954",
+        "x": 1265,
+        "y": 545,
+        "wires": []
+    },
+    {
+        "id": "39265a7999298623",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1095,
+        "wires": [
+            [
+                "39aa180a1680d61a",
+                "5243f1d1236777b6"
+            ]
+        ]
+    },
+    {
+        "id": "af9464add76d37df",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1135,
+        "wires": [
+            [
+                "57f0d47bc7c3d8fb",
+                "7cd5da7e1786dd8f"
+            ]
+        ]
+    },
+    {
+        "id": "e1b83d6205f5fda6",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1175,
+        "wires": [
+            [
+                "358fbfea98d0aae0",
+                "7c60177b555a47b7"
+            ]
+        ]
+    },
+    {
+        "id": "ea844df2147fa4d8",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1215,
+        "wires": [
+            [
+                "d88d85afb4d68a69",
+                "568c1caa47d3743a"
+            ]
+        ]
+    },
+    {
+        "id": "9286022f0352e782",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1255,
+        "wires": [
+            [
+                "8928705979e043d6"
+            ]
+        ]
+    },
+    {
+        "id": "745e0fac8cd77945",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1295,
+        "wires": [
+            [
+                "70ca9fb02b161ff6"
+            ]
+        ]
+    },
+    {
+        "id": "feeeaa6f1d51df4b",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1335,
+        "wires": [
+            [
+                "34585d132a42878b"
+            ]
+        ]
+    },
+    {
+        "id": "561b6da20dc7901e",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1375,
+        "wires": [
+            [
+                "0de2d60bf24f19ad"
+            ]
+        ]
+    },
+    {
+        "id": "244eddde8669ee6c",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1415,
+        "wires": [
+            [
+                "021c03a290e7d324"
+            ]
+        ]
+    },
+    {
+        "id": "93fd42baab158b70",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1455,
+        "wires": [
+            [
+                "e03df62e613ea62c"
+            ]
+        ]
+    },
+    {
+        "id": "cef4863428624fa1",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1495,
+        "wires": [
+            [
+                "4373d144e7fd3433"
+            ]
+        ]
+    },
+    {
+        "id": "0b745f1fed32b41f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1535,
+        "wires": [
+            [
+                "ee1485493d5550b2"
+            ]
+        ]
+    },
+    {
+        "id": "ff343b76fb27b6a4",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1575,
+        "wires": [
+            [
+                "b5afe6d2f0735b9e"
+            ]
+        ]
+    },
+    {
+        "id": "465435f4cefcfe5f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1615,
+        "wires": [
+            [
+                "cf10519b9701cfba"
+            ]
+        ]
+    },
+    {
+        "id": "b149a19ff1bd9528",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1655,
+        "wires": [
+            [
+                "bcc60a14ca55e033"
+            ]
+        ]
+    },
+    {
+        "id": "f20258b8cc84d426",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1695,
+        "wires": [
+            [
+                "a1e7c0505c3a3810"
+            ]
+        ]
+    },
+    {
+        "id": "980d675ce9a2fcc1",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1735,
+        "wires": [
+            [
+                "f8022db55f6dbd98"
+            ]
+        ]
+    },
+    {
+        "id": "607422a8944ff346",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1775,
+        "wires": [
+            [
+                "cc0e272682ba0728"
+            ]
+        ]
+    },
+    {
+        "id": "df1c8561ae558a99",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1815,
+        "wires": [
+            [
+                "c80205b44ac9534e"
+            ]
+        ]
+    },
+    {
+        "id": "41bc5aa7a6896106",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1855,
+        "wires": [
+            [
+                "bc9c246caaab82ba"
+            ]
+        ]
+    },
+    {
+        "id": "ce8683e75446f42d",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1895,
+        "wires": [
+            [
+                "8bfefb3a4c108954"
+            ]
+        ]
+    },
+    {
+        "id": "13f77ce58c79404d",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1935,
+        "wires": [
+            [
+                "38cf3c3a1c53efa2"
+            ]
+        ]
+    },
+    {
+        "id": "d630d224c1e57b39",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1975,
+        "wires": [
+            [
+                "21aba989be978681"
+            ]
+        ]
+    },
+    {
+        "id": "bdeb76ebc2eb9159",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2015,
+        "wires": [
+            [
+                "e4dd6dae4d39304f"
+            ]
+        ]
+    },
+    {
+        "id": "dc5ed123d2040ce9",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2055,
+        "wires": [
+            [
+                "01cbfdcac63fa726"
+            ]
+        ]
+    },
+    {
+        "id": "1ffb5a3dadc0ddb2",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2095,
+        "wires": [
+            [
+                "7a3f674e991b60fd"
+            ]
+        ]
+    },
+    {
+        "id": "84cec338f83dcef8",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 25",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "bb43a27edace1a3f",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 26",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 835,
+        "wires": []
+    },
+    {
+        "id": "2ed0f763c07a56d2",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 27",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 685,
+        "y": 195,
+        "wires": []
+    },
+    {
+        "id": "0f9d400c7d51cbd3",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2135,
+        "wires": [
+            [
+                "74528fb07222de2e"
+            ]
+        ]
+    },
+    {
+        "id": "38f0281a4b82cc2c",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2175,
+        "wires": [
+            [
+                "b60d710f4475512c"
+            ]
+        ]
+    },
+    {
+        "id": "fb567025d9045636",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2215,
+        "wires": [
+            [
+                "210e873f1628502a"
+            ]
+        ]
+    },
+    {
+        "id": "52323124bde62df0",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2255,
+        "wires": [
+            [
+                "188eaa18f89770b8"
+            ]
+        ]
+    },
+    {
+        "id": "d73f6ce62bb7a507",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2295,
+        "wires": [
+            [
+                "d12199dbc315f7fe"
+            ]
+        ]
+    },
+    {
+        "id": "fb7b951c11c9f21c",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2335,
+        "wires": [
+            [
+                "8854cc54c538ae36"
+            ]
+        ]
+    },
+    {
+        "id": "2a4226bd1f23b766",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2375,
+        "wires": [
+            [
+                "87df9b649a48f884"
+            ]
+        ]
+    },
+    {
+        "id": "ef1332354e9f44ee",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2415,
+        "wires": [
+            [
+                "847d497026cce3f5"
+            ]
+        ]
+    },
+    {
+        "id": "0abb7a67e0345c60",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2455,
+        "wires": [
+            [
+                "beaba2bac230ab66"
+            ]
+        ]
+    },
+    {
+        "id": "1fc8864bef2e2038",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2495,
+        "wires": [
+            [
+                "2dd08251a186de34"
+            ]
+        ]
+    },
+    {
+        "id": "bea2806b2cf43a38",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2535,
+        "wires": [
+            [
+                "26891a2cdeace0e5"
+            ]
+        ]
+    },
+    {
+        "id": "f90bc2b2e92e29ff",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2575,
+        "wires": [
+            [
+                "4dbecba3061cdde0"
+            ]
+        ]
+    },
+    {
+        "id": "db5440114d8b0cbe",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2615,
+        "wires": [
+            [
+                "55e10b3144cc5078"
+            ]
+        ]
+    },
+    {
+        "id": "61bff837ed4daba0",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 2655,
+        "wires": [
+            [
+                "b478d2d4542bff27"
+            ]
+        ]
+    },
+    {
+        "id": "66d12133d7f8dedf",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 185,
+        "wires": [
+            [
+                "10401e4bf4cc1433"
+            ]
+        ]
+    },
+    {
+        "id": "bd8c36567e77f0e7",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 225,
+        "wires": [
+            [
+                "3496de7daf9f2322"
+            ]
+        ]
+    },
+    {
+        "id": "7acc7e0b3a96e257",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 265,
+        "wires": [
+            [
+                "5c1826198c303662"
+            ]
+        ]
+    },
+    {
+        "id": "6f2f51d8f309ec9a",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 305,
+        "wires": [
+            [
+                "736018a576b33087"
+            ]
+        ]
+    },
+    {
+        "id": "728dcc4e40bb5816",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 345,
+        "wires": [
+            [
+                "2a031b2c10582e43"
+            ]
+        ]
+    },
+    {
+        "id": "51f94e708bec3c2f",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 385,
+        "wires": [
+            [
+                "fec409206bfa2679"
+            ]
+        ]
+    },
+    {
+        "id": "3649c3ea8a7131c0",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 425,
+        "wires": [
+            [
+                "090287a33ed610bb"
+            ]
+        ]
+    },
+    {
+        "id": "39970701d7f5805d",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 465,
+        "wires": [
+            [
+                "014db263beda9b69"
+            ]
+        ]
+    },
+    {
+        "id": "a2eecd976f16e580",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_220\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 505,
+        "wires": [
+            [
+                "ff6218cecd6b99ff"
+            ]
+        ]
+    },
+    {
+        "id": "85bada48fbd680d7",
+        "type": "function",
+        "z": "4e22d7901237f751",
+        "name": "extend",
+        "func": "\nif (msg.payload[0] === \"pm_200\") {\n    msg.payload = msg.payload[1];\n\n    return msg;\n} else {\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 545,
+        "wires": [
+            [
+                "4de210facb5fc001"
+            ]
+        ]
+    },
+    {
+        "id": "7cd5da7e1786dd8f",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 21",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "7c60177b555a47b7",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 22",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 955,
+        "wires": []
+    },
+    {
+        "id": "568c1caa47d3743a",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 23",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 990,
+        "wires": []
+    },
+    {
+        "id": "697eb5ce9dd01002",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 24",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1090,
+        "wires": []
+    },
+    {
+        "id": "19b2fa5eadc1c1cf",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 28",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1125,
+        "wires": []
+    },
+    {
+        "id": "8fb17a1f2697a9c6",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 29",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1160,
+        "wires": []
+    },
+    {
+        "id": "71a5530533c64dfb",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 30",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1195,
+        "wires": []
+    },
+    {
+        "id": "706d5a85e509213f",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 31",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1230,
+        "wires": []
+    },
+    {
+        "id": "5d4e5d0163545bbe",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 32",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1335,
+        "y": 1265,
+        "wires": []
+    },
+    {
+        "id": "5243f1d1236777b6",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 33",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 890,
+        "wires": []
+    },
+    {
+        "id": "0a0fd3879aa65eca",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 34",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 655,
+        "wires": []
+    },
+    {
+        "id": "5ee1a07e182ffaae",
+        "type": "debug",
+        "z": "4e22d7901237f751",
+        "name": "debug 35",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "3aa7c067eabc2954",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "169.254.167.27",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
