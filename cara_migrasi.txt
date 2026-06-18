@@ -1,6 +1,6 @@
 ====================== Database_Plant2
 cd C:\xampp\mysql\bin
-C:\xampp\mysql\bin>mysql -h 192.168.137.131 -u otics_tps -p database_tps_master < "%USERPROFILE%\Downloads\db_tps_kwh_plant_2 _180626.sql"
+mysql -h 192.168.137.131 -u otics_tps -p database_tps_energy_listrik < "%USERPROFILE%\Downloads\db_tps_kwh_plant_2 _180626.sql"
 
 
 
