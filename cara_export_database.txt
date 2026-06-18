@@ -1,1 +1,3 @@
-cd 
+cd C:\xampp\mysql\bin
+
+mysqldump -h 192.168.137.131 -u otics_tps -p database_tps_master > C:\Users\234066\Downloads\database_tps_master.sql
