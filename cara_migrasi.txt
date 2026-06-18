@@ -1,3 +1,10 @@
+====================== Database_Plant2
+
+C:\xampp\mysql\bin>mysql -h 192.168.137.131 -u otics_tps -p database_tps_master < "%USERPROFILE%\Downloads\db_tps_kwh_plant_2 _180626.sql"
+
+
+
+
 cd C:\xampp\mysql\bin
 C:\xampp\mysql\bin>mysql -h 172.27.63.180 -u otics_tps -p database_tps_master < "%USERPROFILE%\Downloads\database_tps_master.sql"
 
