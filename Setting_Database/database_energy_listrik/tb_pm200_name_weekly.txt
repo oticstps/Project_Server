@@ -1,0 +1,27 @@
+CREATE TABLE `tb_pm200_name_weekly` (
+  `pm_type` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `line_table` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `line_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+
+  `week` int(11) DEFAULT NULL,
+  `week_start_date` date DEFAULT NULL,
+  `week_end_date` date DEFAULT NULL,
+  `week_start_datetime` datetime DEFAULT NULL,
+  `week_end_datetime` datetime DEFAULT NULL,
+
+  `start_kwh` decimal(15,3) DEFAULT NULL,
+  `end_kwh` decimal(15,3) DEFAULT NULL,
+  `total_kwh` decimal(15,3) DEFAULT NULL,
+
+  `year` int(11) DEFAULT NULL,
+  `month` int(11) DEFAULT NULL,
+  `month_name` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+
+  KEY `idx_pm_type` (`pm_type`),
+  KEY `idx_line_table` (`line_table`),
+  KEY `idx_week` (`week`),
+  KEY `idx_year` (`year`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
