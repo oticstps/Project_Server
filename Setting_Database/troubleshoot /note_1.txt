@@ -1,0 +1,136 @@
+Bisa. Error **403 Forbidden** ini biasanya muncul karena phpMyAdmin hanya diizinkan dibuka dari **localhost**, bukan dari IP jaringan seperti:
+
+```text
+http://172.27.6.167/phpmyadmin
+```
+
+Kemungkinan besar kamu pakai **XAMPP** di Windows.
+
+## Cara membuka phpMyAdmin
+
+### 1. Kalau buka dari komputer server yang sama
+
+Coba buka:
+
+```text
+http://localhost/phpmyadmin
+```
+
+atau:
+
+```text
+http://127.0.0.1/phpmyadmin
+```
+
+Kalau bisa terbuka, berarti phpMyAdmin memang dibatasi hanya untuk lokal.
+
+---
+
+## 2. Kalau ingin buka dari komputer lain lewat IP
+
+Edit file ini:
+
+```text
+C:\xampp\apache\conf\extra\httpd-xampp.conf
+```
+
+Cari bagian seperti ini:
+
+```apache
+Alias /phpmyadmin "C:/xampp/phpMyAdmin/"
+<Directory "C:/xampp/phpMyAdmin">
+    AllowOverride AuthConfig
+    Require local
+    ErrorDocument 403 /error/XAMPP_FORBIDDEN.html.var
+</Directory>
+```
+
+Ubah menjadi:
+
+```apache
+Alias /phpmyadmin "C:/xampp/phpMyAdmin/"
+<Directory "C:/xampp/phpMyAdmin">
+    AllowOverride AuthConfig
+
+    <RequireAny>
+        Require local
+        Require ip 172.27.6.0/24
+    </RequireAny>
+
+    ErrorDocument 403 /error/XAMPP_FORBIDDEN.html.var
+</Directory>
+```
+
+Artinya, phpMyAdmin boleh dibuka dari:
+
+```text
+localhost
+```
+
+dan jaringan lokal:
+
+```text
+172.27.6.x
+```
+
+---
+
+## 3. Restart Apache
+
+Buka **XAMPP Control Panel**.
+
+Klik:
+
+```text
+Stop Apache
+Start Apache
+```
+
+Lalu buka lagi:
+
+```text
+http://172.27.6.167/phpmyadmin
+```
+
+---
+
+## Alternatif cepat, tetapi kurang aman
+
+Kalau hanya untuk jaringan pribadi dan sementara, bisa pakai:
+
+```apache
+Require all granted
+```
+
+Contohnya:
+
+```apache
+<Directory "C:/xampp/phpMyAdmin">
+    AllowOverride AuthConfig
+    Require all granted
+    ErrorDocument 403 /error/XAMPP_FORBIDDEN.html.var
+</Directory>
+```
+
+Tapi ini lebih berisiko kalau komputer terhubung ke jaringan umum.
+
+---
+
+## Kalau masih tidak bisa
+
+Cek juga **Windows Firewall**.
+
+Buka:
+
+```text
+Windows Defender Firewall
+Allow an app through firewall
+```
+
+Pastikan **Apache HTTP Server** diizinkan untuk jaringan **Private**.
+
+Namun karena error kamu sudah menampilkan Apache, berarti Apache sebenarnya sudah bisa diakses. Masalah utamanya hampir pasti di bagian:
+
+```apache
+Require local
+```
