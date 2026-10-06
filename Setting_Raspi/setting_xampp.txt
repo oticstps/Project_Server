@@ -10,6 +10,11 @@ sudo ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin
 
 
 
-sudo mysql -u root -p
+-- 1. Buat user terlebih dahulu
+CREATE USER 'otics_tps'@'%' IDENTIFIED BY 'password';
 
-GRANT ALL PRIVILEGES ON *.* TO 'otics_tps'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
+-- 2. Berikan hak akses
+GRANT ALL PRIVILEGES ON *.* TO 'otics_tps'@'%' WITH GRANT OPTION;
+
+-- 3. Terapkan perubahan
+FLUSH PRIVILEGES;
