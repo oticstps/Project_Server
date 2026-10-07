@@ -1,0 +1,121 @@
+
+
+common_rail_1
+
+#	Name	Type	Collation	Attributes	Null	Default	Comments	Extra	Action
+	1	idPrimary Primary	int(11)			No	None		AUTO_INCREMENT	Change Change	Drop Drop	
+	2	created_at	timestamp			Yes	current_timestamp()			Change Change	Drop Drop	
+	3	id_uuid Index	char(36)	utf8mb4_general_ci		Yes	uuid()			Change Change	Drop Drop	
+	4	line_id	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	pg	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	line_name	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	7	name_product	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	8	target	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	9	actual	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	10	loading_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	11	efficiency	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	12	delay	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	13	cycle_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	14	status	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	15	time_trouble	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	16	time_trouble_quality	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	17	andon	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+
+
+common_rail_1_filtered
+
+	#	Name	Type	Collation	Attributes	Null	Default	Comments	Extra	Action
+	1	created_at	timestamp			Yes	current_timestamp()			Change Change	Drop Drop	
+	2	id_uuid Index	char(36)	utf8mb4_general_ci		Yes	uuid()			Change Change	Drop Drop	
+	3	line_id	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	pg	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	line_name	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	name_product	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	7	target	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	8	actual	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	9	loading_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	10	efficiency	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	11	delay	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	12	cycle_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	13	status	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	14	time_trouble	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	15	time_trouble_quality	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	16	andon	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+
+
+
+common_rail_1_transit_manhour
+	#	Name	Type	Collation	Attributes	Null	Default	Comments	Extra	Action
+	1	created_at Index	timestamp			Yes	current_timestamp()			Change Change	Drop Drop	
+	2	id_uuid Index	char(36)	utf8mb4_general_ci		Yes	uuid()			Change Change	Drop Drop	
+	3	line_id Index	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	pg	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	line_name	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	name_product	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	7	target	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	8	actual	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	9	loading_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	10	efficiency	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	11	delay	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	12	cycle_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	13	status Index	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	14	time_trouble	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	15	time_trouble_quality	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	16	andon	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+
+
+
+common_rail_1_core
+
+	#	Name	Type	Collation	Attributes	Null	Default	Comments	Extra	Action
+	1	created_at Index	timestamp			Yes	current_timestamp()			Change Change	Drop Drop	
+	2	id_uuid Primary	char(36)	utf8mb4_general_ci		No	uuid()			Change Change	Drop Drop	
+	3	line_id Index	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	4	pg	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	5	line_name	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	6	name_product	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	7	target	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	8	actual	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	9	loading_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	10	efficiency	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	11	delay	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	12	cycle_time	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	13	status Index	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	14	time_trouble	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	15	time_trouble_quality	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	16	andon	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	17	manpower	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	18	manpower_help	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	19	loading_time_manpower_help	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	20	machine_fault_preq	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	21	machine_fault_duration	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	22	quality_check	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	23	another	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	24	kaizen	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	25	five_s	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	26	manhour_in_line	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	27	manhour_helper	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	28	manhour_five_s	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	29	linegai	varchar(20)	utf8mb4_general_ci		Yes	124			Change Change	Drop Drop	
+	30	total_manhour	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	31	manhour_man_minutes_per_pcs	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	32	PE	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	33	bottle_neck_process	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	34	bottle_neck_process_duration	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	35	bottle_neck_mct	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	36	bottle_neck_mct_duration	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	37	setup_manpower	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	38	setup_ct	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	39	dangae	varchar(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	40	pcs_hour	varchar(20)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	41	delta_time	varchar(100)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	42	year	int(4)			Yes	NULL			Change Change	Drop Drop	
+	43	month	int(2)			Yes	NULL			Change Change	Drop Drop	
+	44	day	varchar(20)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	45	shift Index	varchar(10)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	46	time_only	time			Yes	NULL			Change Change	Drop Drop	
+	47	loading_time_start	char(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	48	loading_time_stop	char(50)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	49	loading_time_server	varchar(255)	utf8mb4_general_ci		Yes	NULL			Change Change	Drop Drop	
+	50	total_break	decimal(5,2)			Yes	NULL			Change Change	Drop Drop	
+
